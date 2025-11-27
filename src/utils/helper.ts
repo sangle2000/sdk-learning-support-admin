@@ -9,9 +9,7 @@ export function encrypt(text: string): string {
     );
   }
 
-  const hashedText = CryptoJS.AES.encrypt(text, secretKey).toString()
-
-  console.log("Hashed Text: ", hashedText)
+  const hashedText = CryptoJS.AES.encrypt(text, secretKey).toString();
 
   return hashedText;
 }

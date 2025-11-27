@@ -29,20 +29,13 @@ export async function logout() {
 
 export async function loadUserFromRefresh() {
   try {
-    console.log("Start load user")
     const res = await api.post("/auth/refresh");
 
-    console.log(res.data)
-
     const hashedAccessToken = encrypt(res.data.accessToken);
-
-    console.log(hashedAccessToken)
 
     localStorage.setItem("accessToken", hashedAccessToken);
 
     const me = await api.get("/auth/me");
-
-    console.log(me.data)
 
     useAuthStore.getState().setUser(me.data);
   } catch {
