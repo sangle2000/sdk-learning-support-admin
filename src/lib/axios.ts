@@ -1,23 +1,32 @@
 import axios from 'axios';
 import { useAuthStore } from "../stores/auth";
+import { decrypt, encrypt } from '../utils/helper';
+
+type PendingRequest = (token: string) => void;
 
 const api = axios.create({
-    baseURL: "https://sdk.petalsandyou.com",
+    baseURL: "http://localhost:3000",
+    // baseURL: "https://sdk.petalsandyou.com",
     withCredentials: true,
+    headers: {
+        "Content-Type": "application/json"
+    }
 })
 
 api.interceptors.request.use(
     (config) => {
-        const token = useAuthStore.getState().accessToken;
-        if (token) {
+        const hashedToken = localStorage.getItem("accessToken");
+        if (hashedToken) {
+            const token = decrypt(hashedToken);
             config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
     }
 )
 
 let refreshing = false;
-let pending: any[] = [];
+let pending: PendingRequest[] = [];
 
 api.interceptors.response.use(
     (res) => res, 
@@ -31,14 +40,32 @@ api.interceptors.response.use(
                 refreshing = true;
 
                 try {
-                    const res = await api.post("/auth/refresh", {
-                        refreshToken: useAuthStore.getState().accessToken,
-                    });
-                    useAuthStore.getState().setAccessToken(res.data.accessToken);
-                } catch {
-                    console.log("Error")
+                    const res = await api.post("/auth/refresh", {});
+                    
+                    localStorage.setItem("accessToken", encrypt(res.data.accessToken));
+
+                    refreshing = true
+
+                    pending.forEach((cb) => cb(res.data.accessToken))
+                    pending = [];
+                } catch (e){
+                    refreshing = false;
+                    pending = [];
+                    useAuthStore.getState().clear()
+                    return Promise.reject(e)
                 }
             }
+
+            return new Promise((resolve) => {
+                pending.push((token: string) => {
+                    original.headers.Authorization = `Bearer ${token}`;
+                    resolve(api(original))
+                })
+            })
         }
+
+        return Promise.reject(err)
     }
 )
+
+export default api

@@ -1,53 +1,48 @@
-import { createBrowserRouter, redirect } from "react-router-dom";
+import { createBrowserRouter, Navigate, redirect } from "react-router-dom";
 import type { ActionFunctionArgs } from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
 import LoginAdmin from "../pages/LoginAdmin";
-import { isAuthenticated, setToken } from "../utils/auth";
-
-const dashboardLoader = () => {
-    if (!isAuthenticated()) {
-        return redirect("/login");
-    }
-    return null;
-};
+import { login } from "../service/auth";
+import ProtectedRoute from "../pages/ProtectedRoute";
+import Dashboard from "../pages/Dashboard";
 
 export const loginAction = async ({ request }: ActionFunctionArgs) => {
-    const form = await request.formData();
-    const email = (form.get("email") as string) || "";
-    const password = (form.get("password") as string) || "";
+  const form = await request.formData();
+  const email = (form.get("email") as string) || "";
+  const password = (form.get("password") as string) || "";
 
-    if (!email || !password) {
-        return { error: "Vui lòng nhập email và mật khẩu" };
-    }
+  if (!email || !password) {
+    return { error: "Vui lòng nhập email và mật khẩu" };
+  }
 
-    // mock authentication delay - replace with real API call
-    const response = await fetch("https://sdk.petalsandyou.com/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-    })
-
-    if (!response.ok) {
-        return { error: "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin." };
-    }
-
-    // On success, persist token and redirect
-    const data = await response.json();
-    setToken(data.accessToken);
+  // mock authentication delay - replace with real API call
+  await login(email, password);
     return redirect("/dashboard");
+//   tr {
+//     await login(email, password);
+//     return redirect("/dashboard");
+//   } catch {
+//     throw new Error("Login failed");
+//   }y
 };
 
 const router = createBrowserRouter([
-    {
-        path: "/dashboard",
-        element: <Dashboard />,
-        loader: dashboardLoader,
-    },
-    {
-        path: "/login",
-        element: <LoginAdmin />,
-        action: loginAction,
-    },
+  {
+    path: "/",
+    element: <Navigate to={"/dashboard"} />,
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/login",
+    element: <LoginAdmin />,
+    action: loginAction,
+  },
 ]);
 
 export default router;
