@@ -1,63 +1,188 @@
-import type {} from '@mui/x-date-pickers/themeAugmentation';
-import type {} from '@mui/x-charts/themeAugmentation';
-import type {} from '@mui/x-data-grid-pro/themeAugmentation';
-import type {} from '@mui/x-tree-view/themeAugmentation';
-import { alpha } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
+import Drawer from '@mui/material/Drawer';
+import CssBaseline from '@mui/material/CssBaseline';
+import Avatar from '@mui/material/Avatar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import LogoutIcon from '@mui/icons-material/Logout';
 import AppNavbar from '../components/AppNavbar';
-import Header from '../components/Header';
 import MainGrid from '../components/MainGrid';
-import SideMenu from '../components/SideMenu';
-import AppTheme from '../shared-theme/AppTheme';
-import {
-  chartsCustomizations,
-  dataGridCustomizations,
-  datePickersCustomizations,
-  treeViewCustomizations,
-} from '../theme/customizations';
+import { useAuthStore } from '../stores/auth';
+import { logout } from '../service/auth';
 
-const xThemeComponents = {
-  ...chartsCustomizations,
-  ...dataGridCustomizations,
-  ...datePickersCustomizations,
-  ...treeViewCustomizations,
-};
+const drawerWidth = 240;
 
-export default function Dashboard(props: { disableCustomTheme?: boolean }) {
+export default function Dashboard() {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const [selectedTag, setSelectedTag] = useState<string>('Overview');
+  const user = useAuthStore((state) => state.user);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
-    <AppTheme {...props} themeComponents={xThemeComponents}>
-      <CssBaseline enableColorScheme />
-      <Box sx={{ display: 'flex' }}>
-        <SideMenu />
-        <AppNavbar />
-        {/* Main content */}
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+      {/* AppBar for mobile */}
+      <AppNavbar />
+      
+      {/* Desktop Drawer with Header and Footer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            backgroundColor: theme.palette.background.paper,
+            borderRight: `1px solid ${theme.palette.divider}`,
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        }}
+      >
+        {/* Header Section - Logo */}
         <Box
-          component="main"
-          sx={(theme) => ({
-            flexGrow: 1,
-            backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
-              : alpha(theme.palette.background.default, 1),
-            overflow: 'auto',
-          })}
+          sx={{
+            p: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            mt: 'calc(var(--template-frame-height, 0px) + 4px)',
+          }}
         >
-          <Stack
-            spacing={2}
+          <img
+            src="/logo/sdk_logo_demo.png"
+            alt="SDK Logo"
+            style={{ width: 48, height: 48 }}
+          />
+          <Typography
+            variant="h6"
             sx={{
-              alignItems: 'center',
-              mx: 3,
-              pb: 5,
-              mt: { xs: 8, md: 0 },
+              fontWeight: 700,
+              color: "#12578c",
+              cursor: 'default',
             }}
           >
-            <Header />
-            <MainGrid />
-          </Stack>
+            Admin Page
+          </Typography>
         </Box>
+
+        {/* Main Content - Menu Tags */}
+        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start', width: '100%' }}>
+            {['Overview', 'Subject', 'Test'].map((tag) => (
+              <Typography
+                key={tag}
+                onClick={() => setSelectedTag(tag)}
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.text.primary,
+                  cursor: 'pointer',
+                  padding: '10px 12px',
+                  borderRadius: 1,
+                  textAlign: "start",
+                  backgroundColor: selectedTag === tag ? theme.palette.action.selected : 'transparent',
+                  transition: 'background-color 0.2s ease',
+                  width: '100%',
+                  '&:hover': {
+                    backgroundColor: selectedTag === tag 
+                      ? theme.palette.action.selected 
+                      : theme.palette.action.hover,
+                  },
+                }}
+              >
+                {tag}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Footer Section - User Info and Logout */}
+        <Box
+          sx={{
+            p: 1,
+            borderTop: `1px solid ${theme.palette.divider}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0, flex: 1 }}>
+            <Avatar
+              alt={user?.name || 'User'}
+              src="/static/images/avatar/7.jpg"
+              sx={{ width: 36, height: 36, flexShrink: 0 }}
+            />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.text.primary,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {user?.name || 'User'}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {user?.email || 'user@example.com'}
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton
+            size="small"
+            onClick={handleLogout}
+            title="Logout"
+            sx={{
+              color: theme.palette.text.primary,
+              flexShrink: 0,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
+          >
+            <LogoutIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      </Drawer>
+
+      {/* Main Content Area */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+        }}
+      >
+        <MainGrid />
       </Box>
-    </AppTheme>
+    </Box>
   );
 }

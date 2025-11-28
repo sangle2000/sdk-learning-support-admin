@@ -5,11 +5,9 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import SelectContent from "./SelectContent";
 import MenuContent from "./MenuContent";
 import OptionsMenu from "./OptionsMenu";
 import { useAuthStore } from "../stores/auth";
-import { useEffect } from "react";
 
 const drawerWidth = 240;
 
@@ -26,10 +24,6 @@ const Drawer = styled(MuiDrawer)({
 
 export default function SideMenu() {
   const user = useAuthStore(state => state.user)
-
-  useEffect(() => {
-    console.log(user)
-  }, [user])
 
   return (
     <Drawer
@@ -48,7 +42,10 @@ export default function SideMenu() {
           p: 1.5,
         }}
       >
-        <SelectContent />
+        <div className="flex items-center gap-2 cursor-default">
+          <img className="w-16" src="/logo/sdk_logo_demo.png"/>
+          <span className="text-2xl font-bold text-blue-900">Admin Page</span>
+        </div>
       </Box>
       <Divider />
       <Box

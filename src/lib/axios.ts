@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from "../stores/auth";
 import { decrypt, encrypt } from '../utils/helper';
+import { redirect } from 'react-router-dom';
 
 type PendingRequest = (token: string) => void;
 
@@ -52,7 +53,8 @@ api.interceptors.response.use(
                     refreshing = false;
                     pending = [];
                     useAuthStore.getState().clear()
-                    return Promise.reject(e)
+                    Promise.reject(e)
+                    return redirect("/login")
                 }
             }
 

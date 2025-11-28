@@ -29,16 +29,24 @@ export async function logout() {
 
 export async function loadUserFromRefresh() {
   try {
-    const res = await api.post("/auth/refresh");
-
-    const hashedAccessToken = encrypt(res.data.accessToken);
-
-    localStorage.setItem("accessToken", hashedAccessToken);
-
     const me = await api.get("/auth/me");
 
     useAuthStore.getState().setUser(me.data);
   } catch {
     useAuthStore.getState().clear();
+  }
+}
+
+export async function createUser(name: string, email: string, role?: string) {
+  try {
+    const newUser = await api.post("/auth/create-user", {
+      email,
+      name,
+      role
+    })
+
+    console.log(newUser)
+  } catch (err) {
+    throw new Error(err)
   }
 }
