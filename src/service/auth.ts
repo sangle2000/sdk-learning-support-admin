@@ -3,7 +3,7 @@ import { useAuthStore } from "../stores/auth";
 import { encrypt } from "../utils/helper";
 
 export async function login(email: string, password: string) {
-  const res = await api.post("/auth/login", { email, password });
+  const res = await api.post("/auth/login-admin", { email, password });
 
   if (res.data.accessToken) {
     // Backend trả về accessToken trong body

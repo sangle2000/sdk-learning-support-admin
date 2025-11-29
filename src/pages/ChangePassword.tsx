@@ -5,6 +5,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
+import { useSearchParams } from "react-router-dom";
+import api from "../lib/axios";
 
 export default function ChangePassword() {
     const theme = useTheme();
@@ -13,7 +15,12 @@ export default function ChangePassword() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Reading a search parameter
+    const resetToken = searchParams.get("token");
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setSuccess('');
@@ -29,6 +36,12 @@ export default function ChangePassword() {
         }
 
         // TODO: call API to change password. For now, show success.
+        const response = await api.patch("/auth/reset-password", {
+            token: resetToken,
+            newPassword: password
+        })
+
+        console.log(response)
         setSuccess('Mật khẩu đã được cập nhật.');
         setPassword('');
         setConfirm('');
