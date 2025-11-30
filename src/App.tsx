@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { loadUserFromRefresh } from './service/auth'
 
 function App() {
-  const accessToken = localStorage.getItem("accessToken")
+  const accessToken = localStorage.getItem("adminAccessToken")
 
   useEffect(() => {
     if (accessToken) {

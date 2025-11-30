@@ -9,7 +9,7 @@ export async function login(email: string, password: string) {
     // Backend trả về accessToken trong body
     const hashedAccessToken = encrypt(res.data.accessToken);
 
-    localStorage.setItem("accessToken", hashedAccessToken);
+    localStorage.setItem("adminAccessToken", hashedAccessToken);
 
     // Lấy thông tin user
     const me = await api.get("/auth/me");
@@ -24,7 +24,7 @@ export async function login(email: string, password: string) {
 export async function logout() {
   await api.post("/auth/logout");
   useAuthStore.getState().clear();
-  localStorage.removeItem("accessToken");
+  localStorage.removeItem("adminAccessToken");
 }
 
 export async function loadUserFromRefresh() {
@@ -47,6 +47,8 @@ export async function createUser(name: string, email: string, role?: string) {
 
     console.log(newUser)
   } catch (err) {
-    throw new Error(err)
+    throw new Error(`Error: ${err}`)
   }
 }
+
+

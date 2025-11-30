@@ -18,12 +18,6 @@ export const loginAction = async ({ request }: ActionFunctionArgs) => {
   // mock authentication delay - replace with real API call
   await login(email, password);
     return redirect("/dashboard");
-//   tr {
-//     await login(email, password);
-//     return redirect("/dashboard");
-//   } catch {
-//     throw new Error("Login failed");
-//   }y
 };
 
 const router = createBrowserRouter([

@@ -16,7 +16,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        const hashedToken = localStorage.getItem("accessToken");
+        const hashedToken = localStorage.getItem("adminAccessToken");
         if (hashedToken) {
             const token = decrypt(hashedToken);
             config.headers.Authorization = `Bearer ${token}`;
@@ -43,7 +43,7 @@ api.interceptors.response.use(
                 try {
                     const res = await api.post("/auth/refresh", {});
                     
-                    localStorage.setItem("accessToken", encrypt(res.data.accessToken));
+                    localStorage.setItem("adminAccessToken", encrypt(res.data.accessToken));
 
                     refreshing = true
 
