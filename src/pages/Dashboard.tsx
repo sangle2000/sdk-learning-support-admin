@@ -1,55 +1,54 @@
-import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import CssBaseline from '@mui/material/CssBaseline';
-import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import LogoutIcon from '@mui/icons-material/Logout';
-import AppNavbar from '../components/AppNavbar';
-import MainGrid from '../components/MainGrid';
-import { useAuthStore } from '../stores/auth';
-import { logout } from '../service/auth';
+import { useTheme } from "@mui/material/styles";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import CssBaseline from "@mui/material/CssBaseline";
+import Avatar from "@mui/material/Avatar";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import LogoutIcon from "@mui/icons-material/Logout";
+import AppNavbar from "../components/AppNavbar";
+import { useAuthStore } from "../stores/auth";
+import { logout } from "../service/auth";
 
 const drawerWidth = 240;
 
 export default function Dashboard() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const [selectedTag, setSelectedTag] = useState<string>('Overview');
+  const [selectedTag, setSelectedTag] = useState<string>("Overview");
   const user = useAuthStore((state) => state.user);
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate("/login");
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: "flex" }}>
       <CssBaseline />
       {/* AppBar for mobile */}
       <AppNavbar />
-      
+
       {/* Desktop Drawer with Header and Footer */}
       <Drawer
         variant="permanent"
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: "none", md: "block" },
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
+          "& .MuiDrawer-paper": {
             width: drawerWidth,
-            boxSizing: 'border-box',
+            boxSizing: "border-box",
             backgroundColor: theme.palette.background.paper,
             borderRight: `1px solid ${theme.palette.divider}`,
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
           },
         }}
       >
@@ -57,11 +56,11 @@ export default function Dashboard() {
         <Box
           sx={{
             p: 2,
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             gap: 1.5,
             borderBottom: `1px solid ${theme.palette.divider}`,
-            mt: 'calc(var(--template-frame-height, 0px) + 4px)',
+            mt: "calc(var(--template-frame-height, 0px) + 4px)",
           }}
         >
           <img
@@ -74,7 +73,7 @@ export default function Dashboard() {
             sx={{
               fontWeight: 700,
               color: "#12578c",
-              cursor: 'default',
+              cursor: "default",
             }}
           >
             Admin Page
@@ -82,27 +81,42 @@ export default function Dashboard() {
         </Box>
 
         {/* Main Content - Menu Tags */}
-        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start', width: '100%' }}>
-            {['Overview', 'Subject', 'Test'].map((tag) => (
+        <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 0.5,
+              alignItems: "flex-start",
+              width: "100%",
+            }}
+          >
+            {["Overview", "Subject", "Test"].map((tag) => (
               <Typography
                 key={tag}
-                onClick={() => setSelectedTag(tag)}
+                onClick={() => {
+                  setSelectedTag(tag);
+                  navigate(`${tag.toLowerCase()}`);
+                }}
                 variant="body1"
                 sx={{
                   fontWeight: 600,
                   color: theme.palette.text.primary,
-                  cursor: 'pointer',
-                  padding: '10px 12px',
+                  cursor: "pointer",
+                  padding: "10px 12px",
                   borderRadius: 1,
                   textAlign: "start",
-                  backgroundColor: selectedTag === tag ? theme.palette.action.selected : 'transparent',
-                  transition: 'background-color 0.2s ease',
-                  width: '100%',
-                  '&:hover': {
-                    backgroundColor: selectedTag === tag 
-                      ? theme.palette.action.selected 
-                      : theme.palette.action.hover,
+                  backgroundColor:
+                    selectedTag === tag
+                      ? theme.palette.action.selected
+                      : "transparent",
+                  transition: "background-color 0.2s ease",
+                  width: "100%",
+                  "&:hover": {
+                    backgroundColor:
+                      selectedTag === tag
+                        ? theme.palette.action.selected
+                        : theme.palette.action.hover,
                   },
                 }}
               >
@@ -117,15 +131,23 @@ export default function Dashboard() {
           sx={{
             p: 1,
             borderTop: `1px solid ${theme.palette.divider}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
             gap: 1,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0, flex: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              minWidth: 0,
+              flex: 1,
+            }}
+          >
             <Avatar
-              alt={user?.name || 'User'}
+              alt={user?.name || "User"}
               src="/static/images/avatar/7.jpg"
               sx={{ width: 36, height: 36, flexShrink: 0 }}
             />
@@ -135,23 +157,23 @@ export default function Dashboard() {
                 sx={{
                   fontWeight: 600,
                   color: theme.palette.text.primary,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
-                {user?.name || 'User'}
+                {user?.name || "User"}
               </Typography>
               <Typography
                 variant="caption"
                 sx={{
                   color: theme.palette.text.secondary,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
-                {user?.email || 'user@example.com'}
+                {user?.email || "user@example.com"}
               </Typography>
             </Box>
           </Box>
@@ -162,7 +184,7 @@ export default function Dashboard() {
             sx={{
               color: theme.palette.text.primary,
               flexShrink: 0,
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: theme.palette.action.hover,
               },
             }}
@@ -176,12 +198,12 @@ export default function Dashboard() {
       <Box
         sx={{
           flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+          display: "flex",
+          flexDirection: "column",
+          width: { xs: "100%", md: `calc(100% - ${drawerWidth}px)` },
         }}
       >
-        <MainGrid />
+        <Outlet />
       </Box>
     </Box>
   );

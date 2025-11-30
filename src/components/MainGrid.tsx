@@ -9,7 +9,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useEffect, useRef, useState } from "react";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 import api from "../lib/axios";
 import { useTheme } from "@mui/material/styles";
 
@@ -137,10 +137,10 @@ export default function MainGrid() {
           </Grid>
         ))}
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <Box className="w-full h-full flex items-center">
+          <Box className="flex items-center w-full h-full">
             <Button
               variant="contained"
-              className="w-full bg-blue-900"
+              className="bg-blue-900 w-full"
               ref={btnRef}
               onClick={openModal}
             >
@@ -235,14 +235,14 @@ export default function MainGrid() {
                 setIsSubmitting(true);
                 try {
                   const fd = new FormData(e.currentTarget as HTMLFormElement);
-                  const name = (fd.get('name') as string) || '';
-                  const email = (fd.get('email') as string) || '';
-                  const role = (fd.get('role') as string) || undefined;
+                  const name = (fd.get("name") as string) || "";
+                  const email = (fd.get("email") as string) || "";
+                  const role = (fd.get("role") as string) || undefined;
 
-                  await api.post('/user/create-user', { name, email, role });
+                  await api.post("/user/create-user", { name, email, role });
                   closeModal();
                 } catch (err) {
-                  console.error('Create user failed', err);
+                  console.error("Create user failed", err);
                 } finally {
                   setIsSubmitting(false);
                 }
@@ -333,8 +333,16 @@ export default function MainGrid() {
                 <Button variant="outlined" color="error" onClick={closeModal}>
                   Cancel
                 </Button>
-                <Button variant="contained" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <CircularProgress size={18} color="inherit" /> : 'Create'}
+                <Button
+                  variant="contained"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    "Create"
+                  )}
                 </Button>
               </div>
             </form>

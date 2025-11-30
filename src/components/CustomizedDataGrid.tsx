@@ -17,6 +17,54 @@ export default function CustomizedDataGrid() {
   const [userDetail, setUserDetail] = useState<GridRowsProp[]>([]);
 
   useEffect(() => {
+    const hashedToken = localStorage.getItem("adminAccessToken");
+
+    if (!hashedToken) {
+      throw new Error("Permission denied");
+    }
+
+    const token = decrypt(hashedToken);
+
+    // 2️⃣ Kết nối WebSocket
+    const socket = io("http://localhost:3000", {
+      auth: { token },
+    });
+
+    // 🔹 Heartbeat
+    const heartbeatInterval = setInterval(() => {
+      socket?.emit("heartbeat");
+    }, 30000); // 30s
+
+    socket.on(
+      "user-online",
+      (user: {
+        id: number;
+        user: string;
+        email: string;
+        role: string;
+        status: string;
+      }) => {
+        setUserDetail((prev) => {
+          // nếu user đã có → chỉ update status
+          if (prev.find((u) => u.id === user.id)) {
+            return prev.map((u) => {
+              return u.id === user.id ? { ...u, status: "Online" } : u;
+            });
+          }
+          // nếu chưa có → thêm vào state
+          return [...prev, { ...user, status: "Online" }];
+        });
+      }
+    );
+
+    socket.on("user-offline", (userId: { id: number }) => {
+      setUserDetail((prev) =>
+        prev.map((u) =>
+          parseInt(u.id) === userId.id ? { ...u, status: "Offline" } : u
+        )
+      );
+    });
+
     // 1️⃣ Lấy danh sách online ban đầu
     const fetchOnlineUsers = async () => {
       const res = await api.get("/auth/online-users");
@@ -42,43 +90,6 @@ export default function CustomizedDataGrid() {
       }
     };
     fetchOnlineUsers();
-
-    const hashedToken = localStorage.getItem("adminAccessToken");
-
-    if (!hashedToken) {
-      throw new Error("Permission denied");
-    }
-
-    const token = decrypt(hashedToken);
-
-    // 2️⃣ Kết nối WebSocket
-    const socket = io("http://localhost:3000", {
-      auth: { token },
-    });
-
-    // 🔹 Heartbeat
-    const heartbeatInterval = setInterval(() => {
-      socket?.emit("heartbeat");
-    }, 30000); // 30s
-
-    socket.on("user-online", (user: { id: number; name: string }) => {
-      setUserDetail((prev) => {
-        // nếu user đã có → chỉ update status
-        if (prev.find((u) => u.id === user.id)) {
-          return prev.map((u) => {
-            return u.id === user.id ? { ...u, status: "Online" } : u;
-          });
-        }
-        // nếu chưa có → thêm vào state
-        return [...prev, { ...user, status: "Online" }];
-      });
-    });
-
-    socket.on("user-offline", (userId: number) => {
-      setUserDetail((prev) =>
-        prev.map((u) => (parseInt(u.id) === userId.id ? { ...u, status: "Offline" } : u))
-      );
-    });
 
     return () => {
       clearInterval(heartbeatInterval);

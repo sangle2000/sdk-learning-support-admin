@@ -5,7 +5,6 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import MenuContent from "./MenuContent";
 import OptionsMenu from "./OptionsMenu";
 import { useAuthStore } from "../stores/auth";
 
@@ -23,7 +22,7 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu() {
-  const user = useAuthStore(state => state.user)
+  const user = useAuthStore((state) => state.user);
 
   return (
     <Drawer
@@ -43,21 +42,11 @@ export default function SideMenu() {
         }}
       >
         <div className="flex items-center gap-2 cursor-default">
-          <img className="w-16" src="/logo/sdk_logo_demo.png"/>
-          <span className="text-2xl font-bold text-blue-900">Admin Page</span>
+          <img className="w-16" src="/logo/sdk_logo_demo.png" />
+          <span className="font-bold text-blue-900 text-2xl">Admin Page</span>
         </div>
       </Box>
       <Divider />
-      <Box
-        sx={{
-          overflow: "auto",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <MenuContent />
-      </Box>
       <Stack
         direction="row"
         sx={{
