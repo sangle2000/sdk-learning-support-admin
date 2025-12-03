@@ -1,6 +1,6 @@
 import { useTheme } from "@mui/material/styles";
-import { Outlet, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -19,6 +19,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [selectedTag, setSelectedTag] = useState<string>("Overview");
   const user = useAuthStore((state) => state.user);
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -28,6 +29,12 @@ export default function Dashboard() {
       console.error("Logout failed:", error);
     }
   };
+
+  useEffect(() => {
+    const tags = location.pathname.split("/");
+    const tag = tags[tags.length - 1];
+    setSelectedTag(tag);
+  }, [location]);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -95,7 +102,6 @@ export default function Dashboard() {
               <Typography
                 key={tag}
                 onClick={() => {
-                  setSelectedTag(tag);
                   navigate(`${tag.toLowerCase()}`);
                 }}
                 variant="body1"
@@ -107,7 +113,7 @@ export default function Dashboard() {
                   borderRadius: 1,
                   textAlign: "start",
                   backgroundColor:
-                    selectedTag === tag
+                    selectedTag === tag.toLowerCase()
                       ? theme.palette.action.selected
                       : "transparent",
                   transition: "background-color 0.2s ease",

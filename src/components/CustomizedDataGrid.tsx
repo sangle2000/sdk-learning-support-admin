@@ -2,8 +2,7 @@ import { DataGrid, type GridRowsProp } from "@mui/x-data-grid";
 import { columns } from "../internals/data/gridData";
 import { useState, useEffect } from "react";
 import api from "../lib/axios";
-import { io } from "socket.io-client";
-import { decrypt } from "../utils/helper";
+import { useAuthStore } from "../stores/auth";
 
 interface IUserData {
   id: number;
@@ -16,24 +15,10 @@ interface IUserData {
 export default function CustomizedDataGrid() {
   const [userDetail, setUserDetail] = useState<GridRowsProp[]>([]);
 
+  const socket = useAuthStore((state) => state.socket);
+
   useEffect(() => {
-    const hashedToken = localStorage.getItem("adminAccessToken");
-
-    if (!hashedToken) {
-      throw new Error("Permission denied");
-    }
-
-    const token = decrypt(hashedToken);
-
-    // 2️⃣ Kết nối WebSocket
-    const socket = io("http://localhost:3000", {
-      auth: { token },
-    });
-
-    // 🔹 Heartbeat
-    const heartbeatInterval = setInterval(() => {
-      socket?.emit("heartbeat");
-    }, 30000); // 30s
+    if (!socket) return;
 
     socket.on(
       "user-online",
@@ -90,12 +75,7 @@ export default function CustomizedDataGrid() {
       }
     };
     fetchOnlineUsers();
-
-    return () => {
-      clearInterval(heartbeatInterval);
-      socket.close();
-    };
-  }, []);
+  }, [socket]);
 
   return (
     <DataGrid

@@ -6,8 +6,8 @@ import { redirect } from "react-router-dom";
 type PendingRequest = (token: string) => void;
 
 const api = axios.create({
-  // baseURL: "http://localhost:3000",
-  baseURL: "https://sdk.petalsandyou.com",
+  baseURL: "http://localhost:3000",
+  // baseURL: "https://sdk.petalsandyou.com",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
