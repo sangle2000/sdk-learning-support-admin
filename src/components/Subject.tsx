@@ -1,19 +1,38 @@
-import { useState } from "react";
-import { Button, Modal, Form, Input, Select, message } from "antd";
+import React, { useState } from "react";
+import { Button, Modal, Form, Input, Select, message, Card } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import api from "../lib/axios";
+import SubjectContent from "./SubjectContent";
 
 const { Option } = Select;
 
-interface ISubjects {
+export interface ISubjects {
   id: number,
   subjectName: string
 }
 
-interface ISessions {
+export interface ISessions {
   id: number,
   sessionName: string
 }
+
+const priorities = [
+  {
+    id: 1,
+    value: "high",
+    text: "Quan trọng"
+  },
+  {
+    id: 2,
+    value: "medium",
+    text: "Cần thiết"
+  },
+  {
+    id: 3,
+    value: "low",
+    text: "Không quá quan trọng"
+  }
+]
 
 export default function Subject() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -25,6 +44,11 @@ export default function Subject() {
   const [newSession, setNewSession] = useState("");
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Fetch subjects on component mount
+  React.useEffect(() => {
+    handleFetchSubject();
+  }, []);
 
   // Trong component Subject, thêm:
   const showModal = () => {
@@ -40,6 +64,7 @@ export default function Subject() {
     try {
       setLoading(true);
       const values = await form.validateFields();
+      console.log(values)
       await api.post('/academics/create-lesson', values);
 
       message.success('Tạo bài học mới thành công!');
@@ -69,18 +94,21 @@ export default function Subject() {
   };
 
   const onSubjectChange = async (value: string) => {
+    const subjectId = subjects.find(subject => subject.subjectName === value)
     setSelectedSubject(value);
     form.setFieldsValue({ session: undefined }); // Reset session when subject changes
-    const response = await api.get(`/academics/session?subjectName=${value}`)
+    const response = await api.get(`/academics/session?subjectId=${subjectId?.id}`)
 
     setSessions(response.data)
   };
 
   const addNewSubject = async () => {
     if (newSubject.trim()) {
-      const newId =
-        subjects.length > 0 ? Math.max(...subjects.map((s) => s.id)) + 1 : 1;
-      setSubjects([...subjects, { id: newId, subjectName: newSubject }]);
+      const response = await api.post('/academics/create-subject', {
+        subjectName: newSubject
+      })
+
+      setSubjects([...subjects, response.data]);
       setNewSubject("");
       message.success("New subject added!");
     }
@@ -100,22 +128,31 @@ export default function Subject() {
   };
 
   return (
-    <div style={{ width: "65vw", height: "100vh" }}>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => {
-          handleFetchSubject()
-          showModal()
-        }}
-        style={{ marginBottom: "1rem", float: "right" }}
+    <div className="w-full h-full">
+      <Card
+        title="Quản lý môn học"
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              handleFetchSubject();
+              showModal();
+            }}
+          >
+            Thêm bài học mới
+          </Button>
+        }
       >
-        Add New Subject
-      </Button>
+        <SubjectContent />
+      </Card>
 
       <Modal
-        title="Add New Subject"
+        title="Thêm bài học mới"
         open={isModalVisible}
+        onCancel={handleCancel}
+        onOk={handleOk}
+        confirmLoading={loading}
         footer={[
           <Button key="back" onClick={handleCancel}>
             Hủy
@@ -124,23 +161,22 @@ export default function Subject() {
             Tạo mới
           </Button>,
         ]}
-        width={600}
       >
-        <Form form={form} layout="vertical" initialValues={{ remember: true }}>
+        <Form form={form} layout="vertical">
           <Form.Item
-            label="Subject"
             name="subjectName"
-            rules={[{ required: true, message: "Please select a subject!" }]}
+            label="Môn học"
+            rules={[{ required: true, message: 'Vui lòng chọn môn học' }]}
           >
             <Select
-              placeholder="Select a subject"
+              placeholder="Chọn môn học"
               onChange={onSubjectChange}
               popupRender={(menu) => (
                 <>
                   {menu}
                   <div style={{ padding: "8px", display: "flex", gap: "8px" }}>
                     <Input
-                      placeholder="New subject name"
+                      placeholder="Tên môn học mới"
                       value={newSubject}
                       onChange={(e) => setNewSubject(e.target.value)}
                     />
@@ -149,7 +185,7 @@ export default function Subject() {
                       onClick={addNewSubject}
                       icon={<PlusOutlined />}
                     >
-                      Add
+                      Thêm
                     </Button>
                   </div>
                 </>
@@ -164,19 +200,19 @@ export default function Subject() {
           </Form.Item>
 
           <Form.Item
-            label="Session"
             name="sessionName"
-            rules={[{ required: true, message: "Please select a session!" }]}
+            label="Buổi học"
+            rules={[{ required: true, message: 'Vui lòng chọn buổi học' }]}
           >
             <Select
-              placeholder="Select a session"
+              placeholder="Chọn buổi học"
               disabled={!selectedSubject}
               popupRender={(menu) => (
                 <>
                   {menu}
                   <div style={{ padding: "8px", display: "flex", gap: "8px" }}>
                     <Input
-                      placeholder="New session name"
+                      placeholder="Tên buổi học mới"
                       value={newSession}
                       onChange={(e) => setNewSession(e.target.value)}
                       disabled={!selectedSubject}
@@ -187,7 +223,7 @@ export default function Subject() {
                       icon={<PlusOutlined />}
                       disabled={!selectedSubject}
                     >
-                      Add
+                      Thêm
                     </Button>
                   </div>
                 </>
@@ -202,13 +238,32 @@ export default function Subject() {
           </Form.Item>
 
           <Form.Item
-            label="Lesson Name"
             name="lessonName"
-            rules={[
-              { required: true, message: "Please input the lesson name!" },
-            ]}
+            label="Tên bài học"
+            rules={[{ required: true, message: 'Vui lòng nhập tên bài học' }]}
           >
-            <Input placeholder="Enter lesson name" />
+            <Input placeholder="Nhập tên bài học" />
+          </Form.Item>
+
+          <Form.Item
+            name="priority"
+            label="Mức độ quan trọng"
+            rules={[{ required: true, message: 'Vui lòng chọn mức độ quan trọng' }]}
+          >
+            <Select
+              placeholder="Chọn mức độ quan trọng"
+              popupRender={(menu) => (
+                <>
+                  {menu}
+                </>
+              )}
+            >
+              {priorities.map((priority) => (
+                <Option key={priority.id} value={priority.value}>
+                  {priority.text}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
         </Form>
       </Modal>
